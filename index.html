@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera App</title>
+    <style>
+        /* CSS styles for camera application */
+        body {
+            background-color: #6cba93; /* Light royal blue or sky color background */
+        }
+        #header {
+            text-align: left;
+            font-size: 38px;
+            font-weight: bold;
+            color: rgb(12, 42, 132); /* Royal Blue color */
+            margin-bottom: 20px;
+        }
+        #aboutUs {
+            margin-bottom: 20px;
+        }
+        #aboutUs p {
+            text-align: left;
+        }
+        #cameraContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #camera {
+            width: 100%;
+            max-width: 1080px; /* Set max-width for 1080 pixel size */
+            height: auto;
+            border: 2px solid black; /* Added border to camera for visibility */
+        }
+        #btnContainer {
+            display: flex;
+            justify-content: space-around; /* Adjusted space between buttons */
+            width: 80%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+        #footer {
+            text-align: left;
+            font-size: 16px;
+            color: #0b0606;
+            margin-bottom: 20px;
+        }
+        #products {
+            margin-bottom: 40px;
+        }
+        #contactUs {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        BGS GROUP
+    </div>
+    <div id="aboutUs">
+        <p>An innovation-based tech firm exploring different ideas to solve current global issues like food security, water storage, unemployment, energy shortages, deforestation which are threatening both Nature & mankind.</p>
+    </div>
+    <div id="cameraContainer">
+        <video id="camera" autoplay playsinline></video>
+        <div id="btnContainer">
+            <button id="openCamera">Open Camera</button>
+            <button id="captureBtn">Capture</button>
+        </div>
+    </div>
+    <div id="products">
+        <p>PRODUCTS:</p>
+        <p><a href="https://www.vhumi.in">VHUMI</a></p>
+    </div>
+    <div id="footer">
+        <p>Contact Us:</p>
+        <p>UDYAM/MSME REG NO. - UDYAM-WB-0080197<br>
+        EMAIL - bgsgroupdirector@gmail.com<br>
+        MOBILE - +91 9051609319<br>
+        ADDRESS - Narmada Park, Parbangla, Batanagar, Maheshtala (M), Kolkata 700140</p>
+    </div>
+    <script>
+        // JavaScript code for camera functionality
+        const openCameraBtn = document.getElementById('openCamera');
+        const captureBtn = document.getElementById('captureBtn');
+        const camera = document.getElementById('camera');
+        
+        let stream = null;
+
+        openCameraBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: 1080, height: 1920 } }); // Set width and height for portrait mode
+                camera.srcObject = stream;
+            } catch (err) {
+                console.error('Error accessing camera:', err);
+            }
+        });
+
+        captureBtn.addEventListener('click', async () => {
+            if (!stream) return;
+
+            // Get GPS location
+            navigator.geolocation.getCurrentPosition((position) => {
+                const { latitude, longitude } = position.coords;
+                const locationText = `Lat: ${latitude}, Long: ${longitude}`;
+                let captureCount = 0;
+
+                const captureImage = () => {
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.width = camera.videoWidth;
+                    canvas.height = camera.videoHeight;
+                    context.drawImage(camera, 0, 0, canvas.width, canvas.height);
+
+                    // Add GPS location & date-time to the image footer
+                    context.font = '12px Arial';
+                    context.fillStyle = '#ffffff';
+                    context.fillText(locationText, 10, canvas.height - 25); // Adjust position for date-time
+                    context.fillText(new Date().toLocaleString(), 10, canvas.height - 10); // Add date-time
+                    const imageData = canvas.toDataURL('image/jpeg');
+
+                    // Save imageData to device (optional)
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = imageData;
+                    downloadLink.download = `captured_image_${captureCount + 1}.jpg`;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+
+                    captureCount++;
+                    if (captureCount < 5) {
+                        setTimeout(captureImage, 1000);
+                    }
+                };
+
+                captureImage();
+            });
+        });
+    </script>
+</body>
+</html>
